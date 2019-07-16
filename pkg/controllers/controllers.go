@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"Project/pkg/models"
 	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"Project/models"
 )
 type Controller struct{
 

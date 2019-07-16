@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"Project/models"
-	"Project/repos"
+	"Project/pkg/models"
+	"Project/pkg/repos"
 	"database/sql"
 	"golang.org/x/crypto/bcrypt"
 
@@ -11,7 +11,7 @@ import (
 )
 func (c *Controller) LoginPageHandler(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		var body,err=repos.LoadFile("templates/login.html")
+		var body,err= repos.LoadFile("Project/ui/login.html")
 		if err!=nil{
 			logFatal(err)
 		}
@@ -38,7 +38,7 @@ func (c *Controller) LoginHandler(db *sql.DB)http.HandlerFunc{
 }
 func (c *Controller) RegisterPageHandler(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		var body,err=repos.LoadFile("templates/register.html")
+		var body,err= repos.LoadFile("Project/ui/register.html")
 		if err!=nil{
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -49,7 +49,7 @@ func (c *Controller) RegisterPageHandler(db *sql.DB) http.HandlerFunc{
 func (c *Controller) RegisterHandler(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
 		r.ParseForm()
-		customer:=models.Customer{r.FormValue("username"),r.FormValue("email"),r.FormValue("password")}
+		customer:= models.Customer{r.FormValue("username"),r.FormValue("email"),r.FormValue("password")}
 		if r.FormValue("confirmPassword")!=customer.Password{
 			fmt.Fprintln(w,"Enter a correct password!")
 		}
@@ -62,7 +62,7 @@ func (c *Controller) RegisterHandler(db *sql.DB) http.HandlerFunc{
 func (c *Controller) GetUserPage(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
 		r.ParseForm()
-		customer:=models.Customer{r.FormValue("username"),r.FormValue("email"),r.FormValue("password")}
+		customer:= models.Customer{r.FormValue("username"),r.FormValue("email"),r.FormValue("password")}
 		if r.FormValue("confirmPassword")!=customer.Password{
 			fmt.Fprintln(w,"Enter a correct password!")
 		}
