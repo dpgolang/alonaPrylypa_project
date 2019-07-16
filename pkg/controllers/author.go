@@ -11,7 +11,7 @@ import (
 )
 func (c *Controller) LoginPageHandler(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		var body,err= repos.LoadFile("Project/ui/login.html")
+		var body,err= repos.LoadFile("ui/login.html")
 		if err!=nil{
 			logFatal(err)
 		}
@@ -38,7 +38,7 @@ func (c *Controller) LoginHandler(db *sql.DB)http.HandlerFunc{
 }
 func (c *Controller) RegisterPageHandler(db *sql.DB) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		var body,err= repos.LoadFile("Project/ui/register.html")
+		var body,err= repos.LoadFile("ui/register.html")
 		if err!=nil{
 			w.WriteHeader(http.StatusBadRequest)
 			return

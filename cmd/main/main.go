@@ -1,4 +1,4 @@
-package realtor_service
+package main
 
 import (
 	"Project/pkg/controllers"
