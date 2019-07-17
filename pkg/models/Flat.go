@@ -10,8 +10,8 @@ type Flat struct {
 	Floor  int
 }
 
-type Customer struct{
+type Customer struct {
 	UserName string
-	Email string
+	Email    string
 	Password string
 }

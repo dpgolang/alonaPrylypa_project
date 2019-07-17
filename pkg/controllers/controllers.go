@@ -8,16 +8,18 @@ import (
 	"log"
 	"net/http"
 )
-type Controller struct{
 
+type Controller struct {
 }
-var flats[]models.Flat
-func logFatal(err error){
-	if err!=nil{
+
+var flats []models.Flat
+
+func logFatal(err error) {
+	if err != nil {
 		log.Fatal(err)
 	}
 }
-func (c *Controller) GetFlats(db *sql.DB) http.HandlerFunc{
+func (c *Controller) GetFlats(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query("SELECT * FROM living_spaces")
 		if err != nil {
@@ -39,17 +41,15 @@ func (c *Controller) GetFlats(db *sql.DB) http.HandlerFunc{
 		json.NewEncoder(w).Encode(flats)
 	}
 }
-func (c *Controller) GetFlat(db *sql.DB) http.HandlerFunc{
+func (c *Controller) GetFlat(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fl models.Flat
-		params:= mux.Vars(r)
-		row:=db.QueryRow("select * from living_spaces where id = $1", params["id"])
-		err:=row.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
+		params := mux.Vars(r)
+		row := db.QueryRow("select * from living_spaces where id = $1", params["id"])
+		err := row.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
 		if err != nil {
 			logFatal(err)
 		}
 		json.NewEncoder(w).Encode(fl)
 	}
 }
-
-
