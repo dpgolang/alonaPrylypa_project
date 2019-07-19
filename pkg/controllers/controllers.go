@@ -1,83 +1,69 @@
 package controllers
 
 import (
+	"Project/pkg/db"
 	"Project/pkg/models"
-	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Controller struct {
+	Finder db.ApartmentsFinder
 }
+func NewControllers(finder db.ApartmentsFinder)*Controller{
+	return &Controller{Finder:finder}
+}
+func (c *Controller) GetAllHousing(w http.ResponseWriter, r *http.Request){
+	apartments,err:=c.Finder.GetAllApartments()
+	if err!=nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("while getting apartments got an error: %v",err)
+		return
+	}
+	json.NewEncoder(w).Encode(apartments)
+}
+func (c *Controller) GetTypeHousing(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		var(
+			flats []models.Flat
+			err error
+		)
 
-func logFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-func (c *Controller) GetAllHousing(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT * FROM living_spaces")
-		if err != nil {
-			logFatal(err)
-		}
-		defer rows.Close()
-		flats := make([]*models.Flat, 0)
-		for rows.Next() {
-			fl := new(models.Flat)
-			err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
-			if err != nil {
-				logFatal(err)
-			}
-			flats = append(flats, fl)
-		}
-		if err = rows.Err(); err != nil {
-			logFatal(err)
-		}
-		json.NewEncoder(w).Encode(flats)
-	}
-}
-func (c *Controller) GetTypeHousing(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params := mux.Vars(r)
-		que:=""
 		if params["type"]=="flats"{
-			que="SELECT * FROM living_spaces WHERE type='Flat'"
+			flats,err=c.Finder.GetFlats()
+		}else if params["type"]=="houses"{
+			flats,err=c.Finder.GetHouses()
+		}else{
+			w.WriteHeader(http.StatusNotFound)
+			log.Println("Unexpected type")
+			return
 		}
-		if params["type"]=="houses"{
-			que="SELECT * FROM living_spaces WHERE type='House'"
+		if err!=nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("while getting apartments got an error:%v",err)
+			return
 		}
-		rows, err := db.Query(que)
-		if err != nil {
-			logFatal(err)
-		}
-		defer rows.Close()
-		flats := make([]*models.Flat, 0)
-		for rows.Next() {
-			fl := new(models.Flat)
-			err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
-			if err != nil {
-				logFatal(err)
-			}
-			flats = append(flats, fl)
-		}
-		if err = rows.Err(); err != nil {
-			logFatal(err)
-		}
+
 		json.NewEncoder(w).Encode(flats)
 	}
-}
-func (c *Controller) GetFlat(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var fl models.Flat
+
+func (c *Controller) GetOneHousing(w http.ResponseWriter, r *http.Request){
 		params := mux.Vars(r)
-		row := db.QueryRow("select * from living_spaces where id = $1", params["id"])
-		err := row.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
-		if err != nil {
-			logFatal(err)
+		val,err:=strconv.Atoi(params["id"])
+		if err!=nil{
+			w.WriteHeader(http.StatusBadRequest)
+			log.Printf("you had a bad request:%v",err)
+			return
+		}
+		fl,err:=c.Finder.GetApartmentById(val)
+		if err!=nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("while getting apartments got an error:%v",err)
+			return
 		}
 		json.NewEncoder(w).Encode(fl)
 	}
-}
+

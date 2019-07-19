@@ -2,7 +2,7 @@ package main
 
 import (
 	"Project/pkg/controllers"
-	"Project/pkg/driver"
+	"Project/pkg/db"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -19,19 +19,13 @@ func main() {
 	if len(port)==0 {
 		log.Fatal("Required parameter service port is not set")
 	}
-	db := driver.ConnectDB()
-	defer db.Close()
-	router := mux.NewRouter()
-	controller := controllers.Controller{}
+	finder:=db.NewAppartmentsStorage()
+	router:=mux.NewRouter()
+	controller:=controllers.NewControllers(finder)
 
-	router.HandleFunc("/", controller.GetAllHousing(db)).Methods("GET")
-	router.HandleFunc("/{type:flats|houses}", controller.GetTypeHousing(db)).Methods("GET")
-	router.HandleFunc("/{id:[0-9]+}", controller.GetFlat(db)).Methods("GET")
-	//router.HandleFunc("/login", controller.LoginPageHandler(db)).Methods("GET")
-	//router.HandleFunc("/login", controller.LoginHandler(db)).Methods("POST")
-	//router.HandleFunc("/register", controller.RegisterPageHandler(db)).Methods("GET")
-	//router.HandleFunc("/register", controller.RegisterHandler(db)).Methods("POST")
-	//router.HandleFunc("/index/{name}",controller.GetUserPage(db)).Methods("GET")
+	router.HandleFunc("/", controller.GetAllHousing).Methods(http.MethodGet)
+	router.HandleFunc("/{type:flats|houses}", controller.GetTypeHousing).Methods(http.MethodGet)
+	router.HandleFunc("/{id:[0-9]+}", controller.GetOneHousing).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
