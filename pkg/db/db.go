@@ -26,8 +26,8 @@ type ApartmentsFinder interface {
 	GetFlats() ([]models.Flat, error)
 	GetHouses() ([]models.Flat, error)
 	RegisterCustomer(name string, email string, pass string) (err error)
-	ReturnCustomer(name string) (models.Customer,error)
-
+	ReturnCustomer(name string) (models.Customer, error)
+	GetEmail(name string) (string, error)
 }
 type ApartmentsStorage struct {
 	db *sql.DB
@@ -40,6 +40,16 @@ func NewAppartmentsStorage() ApartmentsFinder {
 		os.Exit(1)
 	}
 	return &ApartmentsStorage{db}
+}
+func (s ApartmentsStorage) GetEmail(name string) (string, error) {
+	var custom models.Customer
+	str := "'" + name + "'"
+	row := s.db.QueryRow("select * from users where username = $1", str)
+	err := row.Scan(&custom.UserName, &custom.Email)
+	if err != nil {
+		return "", err
+	}
+	return custom.Email, nil
 }
 func (s ApartmentsStorage) GetAllApartments() ([]models.Flat, error) {
 	rows, err := s.db.Query("SELECT * FROM living_spaces")
@@ -110,15 +120,16 @@ func (s ApartmentsStorage) GetApartmentById(id int) (models.Flat, error) {
 	}
 	return fl, nil
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////
 func (s ApartmentsStorage) RegisterCustomer(name string, email string, pass string) (err error) {
 	_, err = s.db.Query("insert into users values ($1, $2, $3)", name, email, pass)
 	return
 }
-func (s ApartmentsStorage) ReturnCustomer (name string)(models.Customer,error){
+func (s ApartmentsStorage) ReturnCustomer(name string) (models.Customer, error) {
 	result := s.db.QueryRow("select password from users where username=$1", name)
 	storedCreds := models.Customer{}
-	err:= result.Scan(&storedCreds.Password)
+	err := result.Scan(&storedCreds.Password)
 	if err != nil {
 		return models.Customer{}, err
 	}
@@ -141,4 +152,3 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
-
