@@ -1,19 +1,24 @@
 package repos
 
-//func UserIsValid(uName, pwd string) bool {
-//	_uName, _pwd, isValid := "alyonka", "190117", false
-//	if uName == _uName && pwd == _pwd {
-//		isValid = true
-//	}
-//	return isValid
-//}
-//func IsEmpty(data string) bool {
-//	return len(data) <= 0
-//}
-//func LoadFile(fileName string) (string, error) {
-//	bytes, err := ioutil.ReadFile(fileName)
-//	if err != nil {
-//		return "", err
-//	}
-//	return string(bytes), nil
-//}
+import (
+	"github.com/alonaprylypa/Project/pkg/controllers"
+	"github.com/gorilla/sessions"
+	"io/ioutil"
+)
+
+func LoadFile(fileName string) (string, error) {
+	bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+func GetUser(s *sessions.Session) controllers.User{
+	val:=s.Values["user"]
+	var user = controllers.User{}
+	user,ok:=val.(controllers.User)
+	if !ok{
+		return controllers.User{Authenticated:false}
+	}
+	return user
+}
