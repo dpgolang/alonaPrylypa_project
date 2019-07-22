@@ -12,12 +12,3 @@ func LoadFile(fileName string) (string, error) {
 	return string(bytes), nil
 }
 
-//func GetUser(s *sessions.Session) controllers.User{
-//	val:=s.Values["user"]
-//	var user = controllers.User{}
-//	user,ok:=val.(controllers.User)
-//	if !ok{
-//		return controllers.User{Authenticated:false}
-//	}
-//	return user
-//}

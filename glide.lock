@@ -1,0 +1,22 @@
+hash: 9a32bf75e3c5cd2e00ef4c6d0fdb4fdc39bf0df206409cc5a7a86d5cea2bed63
+updated: 2019-07-22T08:53:16.107230631+03:00
+imports:
+- name: github.com/gorilla/mux
+  version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
+- name: github.com/gorilla/securecookie
+  version: e59506cc896acb7f7bf732d4fdf5e25f7ccd8983
+- name: github.com/gorilla/sessions
+  version: 4355a998706e83fe1d71c31b07af94e34f68d74a
+- name: github.com/joho/godotenv
+  version: 23d116af351c84513e1946b527c88823e476be13
+- name: github.com/lib/pq
+  version: 3427c32cb71afc948325f299f040e53c1dd78979
+  subpackages:
+  - oid
+  - scram
+- name: golang.org/x/crypto
+  version: 4def268fd1a49955bfb3dda92fe3db4f924f2285
+  subpackages:
+  - bcrypt
+  - blowfish
+testImports: []

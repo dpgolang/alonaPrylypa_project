@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"database/sql"
+	//"database/sql"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -15,6 +15,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	//"net/smtp"
 	"strconv"
 )
 
@@ -62,13 +63,17 @@ func GetUser(s *sessions.Session) User {
 	return user
 }
 
-//func (c *Controller) SendMail(w http.ResponseWriter, r *http.Request){
-//	session,err:=store.Get(r,"cookie-name")
-//	if err != nil {
-//		http.Error(w,err.Error(),http.StatusInternalServerError)
+//func (c *Controller) SendMail(w http.ResponseWriter, r *http.Request) {
+//	session, err := store.Get(r, "cookie-name")
+//	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth || err != nil {
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//		http.Error(w, "You should sign in to check this page", http.StatusForbidden)
 //		return
 //	}
-//	params:=mux.Vars(r)
+//	params := mux.Vars(r)
 //	val, err := strconv.Atoi(params["id"])
 //	if err != nil {
 //		w.WriteHeader(http.StatusBadRequest)
@@ -81,16 +86,25 @@ func GetUser(s *sessions.Session) User {
 //		log.Printf("while getting apartments got an error:%v", err)
 //		return
 //	}
-//	user:=GetUser(session)
-//	email, err := c.Finder.GetEmail(user.Username)
+//	user := GetUser(session)
+//	toEmail, err := c.Finder.GetEmail(user.Username)
 //	if err != nil {
 //		w.WriteHeader(http.StatusInternalServerError)
 //		log.Printf("while getting email got an error:%v", err)
 //		return
 //	}
-//	err=smtp.SendMail()
-//
+//	from := "alyonka130198@gmail.com"
+//	pass := "..."
+//	auth := smtp.PlainAuth("", from, pass, "smtp.gmail.com")
+//	err = smtp.SendMail("smtp.gmail.com:587", auth, from, []string{toEmail}, []byte(msg.Street))
+//	if err != nil {
+//		w.WriteHeader(http.StatusInternalServerError)
+//		log.Printf("failed to send a letter:%v", err)
+//		return
+//	}
 //}
+
+
 func (c *Controller) GetTypeHousing(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var (
@@ -148,20 +162,15 @@ func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	pass := r.FormValue("password")
 	customer, err := c.Finder.ReturnCustomer(name)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			w.WriteHeader(http.StatusUnauthorized)
-			log.Printf("user doesn't exists:%v", err)
-			http.Redirect(w, r, "/register", http.StatusMultipleChoices)
-			return
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("user is not found:%v", err)
+
+		log.Printf("user doesn't exists:%v",err)
+		http.Redirect(w,r, r.Header.Get("Referer"), 302)
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(pass)); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
+
 		log.Printf("password is incorrect:%v", err)
-		http.Redirect(w, r, "/login", http.StatusMultipleChoices)
+		http.Redirect(w,r, r.Header.Get("Referer"), 302)
 		return
 	}
 	user := &User{
