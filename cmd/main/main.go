@@ -18,16 +18,16 @@ func init() {
 func main() {
 	port := os.Getenv("SERVICE_PORT")
 	if len(port) == 0 {
-		port = "8000"
+		port = "8080"
 	}
 	finder := db.NewAppartmentsStorage()
 	router := mux.NewRouter()
 	controller := controllers.NewControllers(finder)
 
-	router.HandleFunc("/housing", controller.GetAllHousing).Methods(http.MethodGet)
-	router.HandleFunc("/housing/{type:flats|houses}", controller.GetTypeHousing).Methods(http.MethodGet)
-	router.HandleFunc("/housing/{id:[0-9]+}", controller.GetOneHousing).Methods(http.MethodGet)
-	//router.HandleFunc("/{id:[0-9]+}", controller.SendMail).Methods(http.MethodPost)
+	router.HandleFunc("/apartments", controller.GetAllHousing).Methods(http.MethodGet)
+	router.HandleFunc("/apartments/{type:flats|houses}", controller.GetTypeHousing).Methods(http.MethodGet)
+	router.HandleFunc("/apartments/{id:[0-9]+}", controller.GetOneHousing).Methods(http.MethodGet)
+	router.HandleFunc("/apartments/{id:[0-9]+}/realtor", controller.GetRealtor).Methods(http.MethodGet)
 	router.HandleFunc("/login", controller.LoginPageHandler).Methods(http.MethodGet)
 	router.HandleFunc("/login", controller.LoginHandler).Methods(http.MethodPost)
 	router.HandleFunc("/index", controller.IndexPageHandler).Methods(http.MethodGet)

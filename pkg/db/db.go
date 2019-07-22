@@ -20,7 +20,7 @@ func init() {
 	}
 }
 
-type ApartmentsFinder interface {
+type DateFinder interface {
 	GetAllApartments() ([]models.Flat, error)
 	GetApartmentById(id int) (models.Flat, error)
 	GetFlats() ([]models.Flat, error)
@@ -29,19 +29,19 @@ type ApartmentsFinder interface {
 	ReturnCustomer(name string) (models.Customer, error)
 	GetEmail(name string) (string, error)
 }
-type ApartmentsStorage struct {
+type Storage struct {
 	db *sql.DB
 }
 
-func NewAppartmentsStorage() ApartmentsFinder {
+func NewAppartmentsStorage() DateFinder {
 	db, err := ConnectDB()
 	if err != nil {
 		log.Printf("can't connect to db:%v", err)
 		os.Exit(1)
 	}
-	return &ApartmentsStorage{db}
+	return &Storage{db}
 }
-func (s ApartmentsStorage) GetEmail(name string) (string, error) {
+func (s Storage) GetEmail(name string) (string, error) {
 	var custom models.Customer
 	str := "'" + name + "'"
 	row := s.db.QueryRow("select * from users where username = $1", str)
@@ -51,7 +51,7 @@ func (s ApartmentsStorage) GetEmail(name string) (string, error) {
 	}
 	return custom.Email, nil
 }
-func (s ApartmentsStorage) GetAllApartments() ([]models.Flat, error) {
+func (s Storage) GetAllApartments() ([]models.Flat, error) {
 	rows, err := s.db.Query("SELECT * FROM living_spaces")
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (s ApartmentsStorage) GetAllApartments() ([]models.Flat, error) {
 	flats := make([]models.Flat, 0)
 	for rows.Next() {
 		fl := new(models.Flat)
-		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
+		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor, &fl.Realtor)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func (s ApartmentsStorage) GetAllApartments() ([]models.Flat, error) {
 	}
 	return flats, nil
 }
-func (s ApartmentsStorage) GetFlats() ([]models.Flat, error) {
+func (s Storage) GetFlats() ([]models.Flat, error) {
 	rows, err := s.db.Query("SELECT * FROM living_spaces where type='Flat'")
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (s ApartmentsStorage) GetFlats() ([]models.Flat, error) {
 	flats := make([]models.Flat, 0)
 	for rows.Next() {
 		fl := new(models.Flat)
-		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
+		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor, &fl.Realtor)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func (s ApartmentsStorage) GetFlats() ([]models.Flat, error) {
 	}
 	return flats, nil
 }
-func (s ApartmentsStorage) GetHouses() ([]models.Flat, error) {
+func (s Storage) GetHouses() ([]models.Flat, error) {
 	rows, err := s.db.Query("SELECT * FROM living_spaces where type='House'")
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (s ApartmentsStorage) GetHouses() ([]models.Flat, error) {
 	flats := make([]models.Flat, 0)
 	for rows.Next() {
 		fl := new(models.Flat)
-		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
+		err := rows.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor, &fl.Realtor)
 		if err != nil {
 			return nil, err
 		}
@@ -111,22 +111,20 @@ func (s ApartmentsStorage) GetHouses() ([]models.Flat, error) {
 	}
 	return flats, nil
 }
-func (s ApartmentsStorage) GetApartmentById(id int) (models.Flat, error) {
+func (s Storage) GetApartmentById(id int) (models.Flat, error) {
 	var fl models.Flat
 	row := s.db.QueryRow("select * from living_spaces where id = $1", id)
-	err := row.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor)
+	err := row.Scan(&fl.Id, &fl.Type, &fl.Street, &fl.Price, &fl.Square, &fl.Rooms, &fl.Floor, &fl.Realtor)
 	if err != nil {
 		return models.Flat{}, err
 	}
 	return fl, nil
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-func (s ApartmentsStorage) RegisterCustomer(name string, email string, pass string) (err error) {
+func (s Storage) RegisterCustomer(name string, email string, pass string) (err error) {
 	_, err = s.db.Query("insert into users values ($1, $2, $3)", name, email, pass)
 	return
 }
-func (s ApartmentsStorage) ReturnCustomer(name string) (models.Customer, error) {
+func (s Storage) ReturnCustomer(name string) (models.Customer, error) {
 	result := s.db.QueryRow("select password from users where username=$1", name)
 	storedCreds := models.Customer{}
 	err := result.Scan(&storedCreds.Password)
@@ -134,6 +132,9 @@ func (s ApartmentsStorage) ReturnCustomer(name string) (models.Customer, error) 
 		return models.Customer{}, err
 	}
 	return storedCreds, nil
+}
+func (s Storage) GetRealtorDate(id int) (models.Realtor, error){
+
 }
 func ConnectDB() (*sql.DB, error) {
 	var err error
@@ -152,3 +153,4 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
+
