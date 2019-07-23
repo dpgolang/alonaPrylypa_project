@@ -3,14 +3,14 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/alonaprylypa/Project/pkg/models"
-	//"golang.org/x/crypto/bcrypt"
 
-	//"github.com/alonaprylypa/Project/pkg/repos"
+	"github.com/alonaprylypa/Project/pkg/models"
+
+	"log"
+
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"log"
-	//"net/http"
+
 	"os"
 )
 
@@ -27,7 +27,6 @@ type DateFinder interface {
 	GetHouses() ([]models.Flat, error)
 	RegisterCustomer(name string, email string, pass string) (err error)
 	ReturnCustomer(name string) (models.Customer, error)
-	GetEmail(name string) (string, error)
 	GetRealtorDate(id int) (models.Realtor, error)
 }
 type Storage struct {
@@ -41,16 +40,6 @@ func NewAppartmentsStorage() DateFinder {
 		os.Exit(1)
 	}
 	return &Storage{db}
-}
-func (s Storage) GetEmail(name string) (string, error) {
-	var custom models.Customer
-	str := "'" + name + "'"
-	row := s.db.QueryRow("select * from users where username = $1", str)
-	err := row.Scan(&custom.UserName, &custom.Email)
-	if err != nil {
-		return "", err
-	}
-	return custom.Email, nil
 }
 func (s Storage) GetAllApartments() ([]models.Flat, error) {
 	rows, err := s.db.Query("SELECT * FROM living_spaces")
@@ -122,7 +111,7 @@ func (s Storage) GetApartmentById(id int) (models.Flat, error) {
 	return fl, nil
 }
 func (s Storage) RegisterCustomer(name string, email string, pass string) (err error) {
-	_, err = s.db.Query("insert into users values ($1, $2, $3)", name, email, pass)
+	_, err = s.db.Exec("insert into users values ($1, $2, $3)", name, email, pass)
 	return
 }
 func (s Storage) ReturnCustomer(name string) (models.Customer, error) {

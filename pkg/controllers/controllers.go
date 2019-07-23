@@ -1,20 +1,20 @@
 package controllers
 
 import (
-	//"database/sql"
 	"encoding/gob"
 	"encoding/json"
+	"html/template"
+	"log"
+	"net/http"
+	"regexp"
+
 	"github.com/alonaprylypa/Project/pkg/db"
 	"github.com/alonaprylypa/Project/pkg/models"
 	"github.com/alonaprylypa/Project/pkg/repos"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"html/template"
-	"log"
-	"net/http"
-	"regexp"
-	//"net/smtp"
+
 	"strconv"
 )
 
@@ -81,16 +81,21 @@ func (c *Controller) GetOneHousing(w http.ResponseWriter, r *http.Request) {
 		log.Printf("you had a bad request:%v", err)
 		return
 	}
-	currency:= r.URL.Query().Get("currency")
-	reg:= regexp.MustCompile(`(?i)usd|eur`)
+	currency := r.URL.Query().Get("currency")
+	reg := regexp.MustCompile(`(?i)usd|eur`)
 	fl, err := c.Finder.GetApartmentById(val)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("while getting apartments got an error:%v", err)
 		return
 	}
-	if reg.MatchString(currency){
-		repos.CurrensyExchange(currency,&fl)
+	if reg.MatchString(currency) {
+		err = repos.CurrensyExchange(currency, &fl)
+		if err!=nil{
+			w.WriteHeader(http.StatusServiceUnavailable)
+			log.Printf("curency has not been converted:%v", err)
+			return
+		}
 	}
 	json.NewEncoder(w).Encode(fl)
 }
@@ -102,6 +107,7 @@ func (c *Controller) GetRealtor(w http.ResponseWriter, r *http.Request) {
 	}
 	user := repos.GetUser(session)
 	if !user.Authenticated {
+		w.WriteHeader(http.StatusNetworkAuthenticationRequired)
 		log.Print("user should sign in to check this page")
 		return
 	}

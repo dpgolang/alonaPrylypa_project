@@ -24,18 +24,18 @@ type Realtor struct {
 	Phone int
 	Email string
 }
-type Privat struct{
-	Date string `json:"date"`
-	Bank string `json:"bank"`
-	BaseCurrency string `json:"baseCurrency"`
-	BaseCurrencyLit string `json:"baseCurrencyLit"`
-	ExchangeRate []ExchangeRate `json:"exchangeRate"`
+type Privat struct {
+	Date            string         `json:"date"`
+	Bank            string         `json:"bank"`
+	BaseCurrency    string         `json:"baseCurrency"`
+	BaseCurrencyLit string         `json:"baseCurrencyLit"`
+	ExchangeRate    []ExchangeRate `json:"exchangeRate"`
 }
-type ExchangeRate struct{
-	BaseCurrency string `json:"baseCurrency"`
-	Currency string `json:"currency"`
-	SaleRateNB float64 `json:"saleRateNB"`
+type ExchangeRate struct {
+	BaseCurrency   string  `json:"baseCurrency"`
+	Currency       string  `json:"currency"`
+	SaleRateNB     float64 `json:"saleRateNB"`
 	PurchaseRateNB float64 `json:"purchaseRateNB"`
-	SaleRate float64 `json:"saleRate"`
-	PurchaseRate float64 `json:"purchaseRate"`
+	SaleRate       float64 `json:"saleRate"`
+	PurchaseRate   float64 `json:"purchaseRate"`
 }

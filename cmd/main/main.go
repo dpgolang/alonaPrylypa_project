@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/alonaprylypa/Project/pkg/controllers"
 	"github.com/alonaprylypa/Project/pkg/db"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"log"
-	"net/http"
-	"os"
 )
 
 func init() {

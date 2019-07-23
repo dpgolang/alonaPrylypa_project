@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/alonaprylypa/Project/pkg/models"
 	"github.com/alonaprylypa/Project/pkg/repos"
 	"golang.org/x/crypto/bcrypt"
-	"log"
-	"net/http"
 )
 
 func (c *Controller) LoginPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,21 +22,19 @@ func (c *Controller) LoginPageHandler(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "cookie-name")
 	if err != nil {
-		log.Printf("user doesn't login:%v", err)
-		http.Redirect(w, r, r.Header.Get("Referer"), 302)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	name := r.FormValue("name")
 	pass := r.FormValue("password")
 	customer, err := c.Finder.ReturnCustomer(name)
 	if err != nil {
-
 		log.Printf("user doesn't exists:%v", err)
 		http.Redirect(w, r, r.Header.Get("Referer"), 302)
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(pass)); err != nil {
-		log.Printf("password is incorrect:%v", err)
+		log.Printf("user doesn't exists:%v", err)
 		http.Redirect(w, r, r.Header.Get("Referer"), 302)
 		return
 	}
@@ -64,13 +63,15 @@ func (c *Controller) IndexPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 func (c *Controller) LogOut(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "cookie-name")
-
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	session.Values["user"] = models.User{}
 	session.Options.MaxAge = -1
 	err = session.Save(r, w)
 	if err != nil {
-		w.WriteHeader(http.StatusPermanentRedirect)
-		log.Printf("http page is not available: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
