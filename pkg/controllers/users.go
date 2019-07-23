@@ -21,8 +21,8 @@ func (c *Controller) LoginPageHandler(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "cookie-name")
 	if err != nil {
-		log.Printf("user doesn't login:%v",err)
-		http.Redirect(w,r, r.Header.Get("Referer"), 302)
+		log.Printf("user doesn't login:%v", err)
+		http.Redirect(w, r, r.Header.Get("Referer"), 302)
 		return
 	}
 	name := r.FormValue("name")
@@ -30,14 +30,13 @@ func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	customer, err := c.Finder.ReturnCustomer(name)
 	if err != nil {
 
-		log.Printf("user doesn't exists:%v",err)
-		http.Redirect(w,r, r.Header.Get("Referer"), 302)
+		log.Printf("user doesn't exists:%v", err)
+		http.Redirect(w, r, r.Header.Get("Referer"), 302)
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(pass)); err != nil {
-		//fmt.Fprintf(w,"<script>alert(data entered incorrectly)</script>")
 		log.Printf("password is incorrect:%v", err)
-		http.Redirect(w,r, r.Header.Get("Referer"), 302)
+		http.Redirect(w, r, r.Header.Get("Referer"), 302)
 		return
 	}
 	user := &models.User{

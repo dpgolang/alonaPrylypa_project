@@ -28,6 +28,7 @@ type DateFinder interface {
 	RegisterCustomer(name string, email string, pass string) (err error)
 	ReturnCustomer(name string) (models.Customer, error)
 	GetEmail(name string) (string, error)
+	GetRealtorDate(id int) (models.Realtor, error)
 }
 type Storage struct {
 	db *sql.DB
@@ -133,8 +134,14 @@ func (s Storage) ReturnCustomer(name string) (models.Customer, error) {
 	}
 	return storedCreds, nil
 }
-func (s Storage) GetRealtorDate(id int) (models.Realtor, error){
-
+func (s Storage) GetRealtorDate(id int) (models.Realtor, error) {
+	result := s.db.QueryRow("SELECT r.name, r.number, r.email FROM realtor r left JOIN living_spaces liv ON liv.realtor = r.name WHERE liv.id = $1", id)
+	storedCreds := models.Realtor{}
+	err := result.Scan(&storedCreds.Name, &storedCreds.Phone, &storedCreds.Email)
+	if err != nil {
+		return models.Realtor{}, err
+	}
+	return storedCreds, nil
 }
 func ConnectDB() (*sql.DB, error) {
 	var err error
@@ -153,4 +160,3 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
-

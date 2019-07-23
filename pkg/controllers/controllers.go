@@ -13,6 +13,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"regexp"
 	//"net/smtp"
 	"strconv"
 )
@@ -20,6 +21,7 @@ import (
 type Controller struct {
 	Finder db.DateFinder
 }
+
 var store *sessions.CookieStore
 var tpl *template.Template
 
@@ -46,18 +48,6 @@ func (c *Controller) GetAllHousing(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(apartments)
 }
-//func (c *Controller) SendMail(w http.ResponseWriter, r *http.Request) {
-//	session, err := store.Get(r, "cookie-name")
-//	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth || err != nil {
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//		http.Error(w, "You should sign in to check this page", http.StatusForbidden)
-//		return
-//	}
-
-
 func (c *Controller) GetTypeHousing(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var (
@@ -91,33 +81,42 @@ func (c *Controller) GetOneHousing(w http.ResponseWriter, r *http.Request) {
 		log.Printf("you had a bad request:%v", err)
 		return
 	}
+	currency:= r.URL.Query().Get("currency")
+	reg:= regexp.MustCompile(`(?i)usd|eur`)
 	fl, err := c.Finder.GetApartmentById(val)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("while getting apartments got an error:%v", err)
 		return
 	}
+	if reg.MatchString(currency){
+		repos.CurrensyExchange(currency,&fl)
+	}
 	json.NewEncoder(w).Encode(fl)
 }
-func (c *Controller) GetRealtor(w http.ResponseWriter, r * http.Request){
+func (c *Controller) GetRealtor(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "cookie-name")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	user := repos.GetUser(session)
-	if !user.Authenticated{
-		log.Printf("user should sign in to check this page:%v", err)
-		http.Redirect(w, r, "/login", http.StatusMultipleChoices)
+	if !user.Authenticated {
+		log.Print("user should sign in to check this page")
 		return
 	}
-	params:=mux.Vars(r)
+	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("you had a bad request:%v", err)
 		return
 	}
-	realtor,err:=c.Finder.GetRealtorDate(id)
+	realtor, err := c.Finder.GetRealtorDate(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("while getting date of realtor got an error:%v", err)
+		return
+	}
+	json.NewEncoder(w).Encode(realtor)
 }
-
