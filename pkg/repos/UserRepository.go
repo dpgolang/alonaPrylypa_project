@@ -1,3 +1,4 @@
+//Package contains auxiliary functions
 package repos
 
 import (

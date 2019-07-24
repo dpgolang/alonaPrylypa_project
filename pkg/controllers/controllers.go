@@ -1,3 +1,7 @@
+//The package contains all handlers that call function
+//for working with the database.
+//In particular, this file contains handlers for
+//working with apartments
 package controllers
 
 import (
@@ -91,7 +95,7 @@ func (c *Controller) GetOneHousing(w http.ResponseWriter, r *http.Request) {
 	}
 	if reg.MatchString(currency) {
 		err = repos.CurrensyExchange(currency, &fl)
-		if err!=nil{
+		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			log.Printf("curency has not been converted:%v", err)
 			return
